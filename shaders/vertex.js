@@ -1,10 +1,16 @@
-export default `    
-varying vec2 vUv;
-varying float vPattern;
+   
+export default /*glsl*/`
 
-void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`
 
+    varying vec2 vUv;
+
+
+        void main()
+        {
+
+         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+
+         vUv = uv; 
+      
+    }
+`;
