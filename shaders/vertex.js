@@ -1,36 +1,39 @@
    
 export default /*glsl*/`
 
-uniform float uSize;
-attribute float aScale;
-varying vec3 vColor;
+varying vec3 vPosition;
+varying vec3 vNormal;
 uniform float uTime;
-attribute vec3 aRandomness;
 
-        void main()
-        {
 
-          vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+float random2D(vec2 value)
+{
+    return fract
+    (sin
+      (dot
+        (value.xy,vec2(12.9898, 78.233)))
+        * 43758.5453123);
+}
 
-          float angle = atan(modelPosition.x, modelPosition.z);
-          float distanceToCentre = length(modelPosition.xz);
-          float angleOffset = (1.0 / distanceToCentre) * uTime * 0.09;
-          angle += angleOffset;
-          modelPosition.x = cos(angle) * distanceToCentre;
-          modelPosition.z = sin(angle) * distanceToCentre;
+void main() {
 
-          modelPosition.x += aRandomness.x;
-          modelPosition.y += aRandomness.y;
-          modelPosition.z += aRandomness.z;
+  vec4 modelPosition = modelMatrix * vec4(position, 1.0);
 
-                vec4 viewPosition = viewMatrix * modelPosition;
-                vec4 projectedPosition = projectionMatrix * viewPosition;
-                gl_Position = projectedPosition;
+  float glitchTime = uTime - modelPosition.y;
+  float glitchStrength = sin(glitchTime) + sin(glitchTime * 3.45) + sin(glitchTime * 8.76);
+  glitchStrength /= 3.0;
+  glitchStrength = smoothstep(0.3, 1.0, glitchStrength);
+  glitchStrength *= 0.25;
 
-                gl_PointSize = uSize * aScale;
-                gl_PointSize *= (1.0 / - viewPosition.z); // изменятет размер объекта в зависимости от расстояния
+  modelPosition.x += (random2D(modelPosition.xz + uTime) - 0.5) * glitchStrength;
+  modelPosition.z += (random2D(modelPosition.zx + uTime) - 0.5) * glitchStrength;
 
-                vColor = color;
-      
-    }
+  gl_Position = projectionMatrix * viewMatrix * modelMatrix * modelPosition;
+
+  vec4 modelNormal = modelMatrix * vec4(normal, 0.0);
+
+  vPosition = (modelPosition.xyz);
+  vNormal = modelNormal.xyz;
+}
+
 `;
